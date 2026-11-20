@@ -1,0 +1,623 @@
+#include <std/core.pat>
+#pragma pattern_limit 1000000
+#pragma array_limit 1000000
+struct MapBounds {
+  float map_min_x;
+  float map_min_y;
+  float map_max_x;
+  float map_max_y;
+};
+
+struct Chunk1 {
+  u32 chunk_id;
+  u32 chunk_size;
+  u8 chunk_data[chunk_size];
+};
+
+// Map params
+struct Chunk2 {
+  u32 chunk_id;
+  u32 chunk_size;
+  // Chunk data start
+  u32 magic_num;
+  u8 always_2;
+  MapBounds map_bounds;
+  u32 f0;
+  u32 f1;
+  u32 f2;
+  u32 f3;
+  u32 f4;
+};
+
+struct Vertex2 {
+  float x;
+  float y;
+};
+
+struct PropInfo {
+  u16 filename_index;
+  float x;
+  float y;
+  float z;
+  float f4;
+  float f5;
+  float f6;
+  float cos_angle; // cos of angle in radians
+  float sin_angle; // sin of angle in radians
+  float f9;
+  float f10;
+  float f11;
+  u8 f12;
+  u8 num_some_structs;
+  Vertex2 some_structs[num_some_structs];
+};
+
+struct PropArray{
+  u16 num_props;
+  PropInfo props_info[num_props];
+};
+
+struct SomeVertex{
+  float x;
+  float y;
+  float z;
+  u32 f6;
+  u32 f7;
+  u32 f8;
+};
+
+
+
+struct SomeVertexData {
+  u8 f0;
+  u32 array_size_in_bytes;
+  u32 num_elements;
+  SomeVertex vertices[num_elements];
+};
+
+struct SomeData {
+  u8 f0;
+  u32 array_size_in_bytes;
+  u32 num_elements;
+  u16 array[num_elements];
+};
+
+struct SomeData1 {
+  u8 f0;
+  u32 array_size_in_bytes;
+  u32 num_elements;
+  Vertex2 array[num_elements];
+};
+
+struct SomeData2Struct {
+  u16 f0;
+  u16 prop_index;
+};
+
+struct SomeData2 {
+  u8 f0;
+  u32 array_size_in_bytes;
+  u16 num_elements;
+  SomeData2Struct array[num_elements];
+};
+
+struct Chunk3 {
+  u32 chunk_id;
+  u32 chunk_size;
+  // Chunk data start
+  u32 magic_number;
+  u16 magic_number2; // checked if 0x11 or 0x12 in-game.
+  u32 prop_array_size_in_bytes;
+  PropArray prop_array;
+  SomeVertexData some_vertex_data;
+  SomeData some_data0;
+  SomeData1 some_data1;
+  SomeData2 some_data2;
+  u8 chunk_data[chunk_size-10-sizeof(prop_array)-sizeof(some_vertex_data)-sizeof(some_data0)-sizeof(some_data1)-sizeof(some_data2)];
+};
+
+struct Chunk4DataHeader { 
+  u32 signature;
+  u8 version;
+};
+
+// To get file hash from name do:
+// (id0 - 0xff00ff) + (id2 * 0xff00);
+struct FileName{
+  u16 id0;
+  u16 id1;
+};
+
+struct Chunk4DataElement{
+  FileName filename;
+  u16 f1;
+};
+
+struct Chunk4 {
+  u32 chunk_id;
+  u32 chunk_size;
+  Chunk4DataHeader data_header;
+  //Chunk4DataElement array[228];
+  Chunk4DataElement array[(chunk_size-sizeof(data_header))/6];
+  u8 chunk_data[chunk_size-sizeof(data_header)-sizeof(array)];
+};
+
+struct Chunk5Element{
+  u8 tag;
+  u16 size;
+  u16 unknown;
+  u8 data[size];
+};
+
+struct Chunk5Element1{
+  u8 tag;
+  u32 size;
+  u32 num_zones;
+};
+
+struct Chunk5Element2{
+  u8 unknown[20];
+  u8 unknown1;
+  u16 some_size;
+  u16 unknown2;
+  if (some_size <= 0){
+    u32 unknown3;
+    u32 count2;
+    Vertex2 vertices[count2];
+  } else{
+    u8 some_data[some_size];
+  }
+};
+
+struct Chunk5Sub0 {
+  u32 num_vertices;
+  Vertex2 vertices[num_vertices];
+  u8 some_data[28];
+  u8 zero;
+};
+
+struct Chunk5 {
+  u32 chunk_id;
+  u32 chunk_size;
+  // Data start
+  u32 magic_num; // 0x59220329
+  u32 magic_num1; // 0xA0
+  Chunk5Element element_0;
+  Chunk5Element element_1;
+  Chunk5Element1 element_2;
+  Chunk5Element element_3;
+  if (element_2.num_zones > 0){
+    u32 unknown0;
+    u32 unknown1;
+    float unknown2[8];
+    Chunk5Element2 some_array[element_2.num_zones];
+    u8 chunk_data[chunk_size-8-sizeof(element_0)-sizeof(element_1)-
+      sizeof(element_2)-sizeof(element_3)-8-sizeof(unknown2)-sizeof(some_array)];
+  }
+  else {
+    u8 chunk_data[chunk_size-8-sizeof(element_0)-sizeof(element_1)-sizeof(element_2)-sizeof(element_3)];
+  }
+};
+
+struct Chunk5_0 {
+  u32 chunk_id;
+  u32 chunk_size;
+  // Data start
+  u32 magic_num; // 0x59220329
+  u32 magic_num1; // 0xA0
+  Chunk5Element element_0;
+  Chunk5Element element_1;
+  Chunk5Element1 element_2;
+  Chunk5Element element_3;
+  if (element_2.num_zones > 0){
+    u32 unknown0;
+    Chunk5Sub0 sub0[element_2.num_zones];
+    //u32 unknown1;
+    //float unknown2[unknown1 * 2];
+    //Chunk5Element2 some_array[13];
+    u8 chunk_data[chunk_size-8-sizeof(element_0)-sizeof(element_1)-
+      sizeof(element_2)-sizeof(element_3)-4-sizeof(sub0)];
+  }
+  else {
+    u8 chunk_data[chunk_size-8-sizeof(element_0)-sizeof(element_1)-sizeof(element_2)-sizeof(element_3)];
+  }
+};
+
+struct SomeData8 {
+  u32 size;
+  u8 unknown1[size];
+  u8 unknown0[128];
+};
+
+
+struct Chunk8 {
+  u32 chunk_id;
+  u32 chunk_size;
+  u32 magic_num;
+  u32 magic_num1;
+  u8 tag;
+  u32 some_size;
+  u32 terrain_x_dims; // Not sure what dims refer to. Maybe the terrain is divided into grid tiles?
+  u32 terrain_y_dims;
+  float some_float;
+  float some_small_float; // checked that it is less than 1.570796 and >=0
+  u16 some_size1;
+  float some_float1;
+  float some_float2;
+  u8 tag1;
+  u32 terrain_height_size_bytes;
+  float terrain_height_vertices[terrain_x_dims*terrain_y_dims]; // same as [terrain_height_size_bytes/4]
+  u8 tag2;
+  u32 num_terrain_tiles; // num terrain height vertices
+  u8 terrain_texture_indices_maybe[num_terrain_tiles];
+  u8 tag3;
+  u32 some_size2;
+  u8 some_size3;
+  u8 some_data3[some_size3];
+  u8 tag4;
+  u32 some_size4;
+  u8 some_size4_1;
+  u8 some_data4[some_size4_1];
+  u8 tag5;
+  u32 some_size5;
+  u8 some_data5[some_size5];
+  u8 tag6;
+  u32 num_terrain_tiles1;
+  u8 something_for_each_tile1[num_terrain_tiles1];
+  u8 tag7;
+  u32 some_size7;
+  SomeData8 some_per_32x32_tiles_data[terrain_x_dims*terrain_y_dims / 32 / 32];
+  u32 unknown1;
+  u8 zero;
+  u8 chunk_data[chunk_size-76-sizeof(terrain_height_vertices)
+    -sizeof(terrain_texture_indices_maybe)-sizeof(some_data3)-sizeof(some_data4)
+    -sizeof(some_data5)-sizeof(something_for_each_tile1)
+    -sizeof(some_per_32x32_tiles_data)-5];
+};
+
+struct FileNameWith2Zeros{
+  FileName file_name;
+  u16 zero;
+};
+
+struct WaterAndSkyFilenamesChunk {
+  u32 chunk_id;
+  u32 chunk_size;
+  u16 unknown0;
+  u16 unknown1;
+  u8 unknown2;
+  FileNameWith2Zeros filenames[(chunk_size - 5)  / sizeof(FileNameWith2Zeros)];
+};
+
+struct ShoreSubChunk {
+  float float0;
+  float shore_land_vertex_height; // The height of the vertex furthest from water
+  float max_alpha; // values between 0 and 1. 0 means no shore and 1 means very visible shore waves. Anything higher than 1 and the game freezes.
+  float wave_speed; // 0 is stopped and 1 is very fast. Less than 0 and the shore doesn't render. It can exceed 1 and get even faster.
+  u32 vertices_count;
+  Vertex2 vertices[vertices_count];
+  u32 integer0;
+};
+
+struct ShoreChunk {
+  u32 chunk_id;
+  u32 chunk_size;
+  char name[4];
+  u32 unknown1;
+  u32 subchunk_count;
+  ShoreSubChunk subchunks[subchunk_count];
+  
+ u8 rem_data[chunk_size - 12 - 5 - sizeof(subchunks)];
+  
+ u32 unknown9;
+ u8 zero;
+};
+
+struct BigChunkSub0 {
+  u8 unknown[20];
+  Vertex2 vertices[3];
+};
+
+struct BigChunk {
+  u32 chunk_id;
+  u32 chunk_size;
+  u32 magicnum_BE_0x4c70feee;
+  u32 magicnum_0xC;
+  u32 unknown1;
+  u8 tag;
+  u32 next_subdata_size0;
+  u16 vertex_count;
+  Vertex2 vertices0[vertex_count];
+  u8 tag0;
+  u32 some_size;
+  u8 unknown2;
+  u32 unknown3;
+  u32 unknown4;
+  u32 vertex_count1;
+  u32 unknown5;
+  u32 unknown6;
+  u32 unknown7;
+  u32 unknown8;
+  u32 unknown9;
+  u32 unknown10;
+  u32 unknown11;
+  u32 unknown12;
+  u8 unknown13;
+  Vertex2 vertices1[vertex_count1];
+  u8 unknown14;
+  u32 vertices_data_size;
+  Vertex2 vertices2[vertices_data_size/(2*sizeof(float))];
+  u8 unknown15;
+  u32 bcs0_size;
+  BigChunkSub0 bcs0[bcs0_size/sizeof(BigChunkSub0)];
+  u8 some_data[some_size-1-4*11-1-sizeof(vertices1)-1-4-sizeof(vertices2)
+               -1-4-sizeof(bcs0)];
+  u8 tag1;
+  u32 some_size1;
+  u8 some_data1[some_size1];
+  u8 tag2;
+  u32 some_size2;
+  u8 some_data2[some_size2];
+  u8 tag3;
+  u32 some_size3;
+  u8 some_data3[some_size3];
+  u32 unknown33;
+  u8 zero;
+};
+
+struct EnvSubChunk0 {
+   u8 unknown0;
+   u8 unknown1;
+   s32 unknown2;
+   u8 unknown3;
+   u8 unknown4;
+   u16 unknown5;
+};
+
+struct EnvSubChunk1 {
+   u8 sky_brightness_maybe; // at 0 the sky is less bright and no specular highlights
+   u8 sky_saturaion_maybe; // not sure if saturation but changes colors.
+   u8 some_color_scale; // 0xff more gray-scale, 0 normal color.
+   u16 unknown2;
+   u8 unknown4;
+};
+
+struct EnvSubChunk2 {
+   u8 fog_blue;
+   u8 fog_green;
+   u8 fog_red;
+   u32 fog_distance_start;
+   u32 fog_distance_end;
+   s32 fog_z_start_maybe;
+   s32 fog_z_end_maybe; // remember GW uses negative height
+};
+
+// Setting this whole chunk to 0 turns everything black except specular highlights it seems.
+// and some exceptions to the above.
+struct EnvSubChunk3 {
+   // Ambient light perhaps.
+   u8 ambient_blue;
+   u8 ambient_green;
+   u8 ambient_red;
+   u8 ambient_intensity; // setting to zero makes all shadows completely black.
+
+   // These select the color of everywhere directly hit by the sun light
+   // No effect on the places in shadow.
+   u8 sun_blue;
+   u8 sun_green;
+   u8 sun_red;
+   u8 sun_intensity;
+};
+
+struct EnvSubChunk4 {
+   u8 data[2];
+};
+
+struct EnvSubChunk5 {
+   u8 cloud_cylinder_radius_scale_maybe; // Always at 0xff? Settings it to lower values than 0xff seem to create a second cylinder for the clouds that is smaller than be sky cylinder.
+   
+   // Settings these indices to 0xFFFF makes the game not load it.
+   u16 sky_background_texture_index;
+   u16 sky_clouds_texture_index0;
+   u16 sky_clouds_texture_index1;
+   u16 sky_sun_texture_index;
+   
+   u8 unknown0; // the higher the number the higher up the fog seem to cover the sky
+   
+   // Probably sky cylinder dimensions (height and radius)
+   s16 unknown1;
+   s16 unknown2;
+   u8 unknown3;
+   //u8 data[0xf-9];
+};
+
+// This is used if the value 4 bytes after magic_num_0x92991030 is >= 0x00010000
+struct EnvSubChunk5_other {
+   u8 cloud_cylinder_radius_scale_maybe;
+   u16 sky_background_texture_index;
+   u16 sky_clouds_texture_index0;
+   u16 sky_clouds_texture_index1;
+   u16 sky_sun_texture_index;
+   u8 unknown[7];
+};
+
+// Water environment info most likely
+struct EnvSubChunk6 {
+   u8 unknown[9];
+   float unknown1;
+   float water_distortion_tex_scale; // small means larger scale and big means smaller scale.
+   float water_distortion_scale; // small and the water surface is completely flat with good reflections. High and all reflections disappear. Crashes Gw with too high values. 10 didnt crash lakeside 100 did. 
+   float water_distortion_tex_speed;
+   float water_color_tex_scale;
+   float water_color_tex_speed;
+   float water_color_and_alpha_related; // 0 means water is less transparent and more of the water color texture is applied. Higher numbers does the opposite: makes it more transparent.
+   float water0;
+   float water1;
+   // The colors have a strong effect on the final color of the water. 
+   // the 1 colors seem to be stronger than the 0 colors. If alpha is set 
+   // to 255 for both then the 1 colors might overwrite the 0 colors.
+   // If alpha is set to 0 then the water is fully transparent.
+   u8 blue_color0;
+   u8 green_color0;
+   u8 red_color0;
+   u8 alpha0;
+   u8 blue_color1;
+   u8 green_color1;
+   u8 red_color1;
+   u8 alpha1;
+   u16 water_color_texture;
+   u16 water_distortion_texture;
+};
+
+struct EnvSubChunk7 {
+   u8 wind_dir0;
+   u8 wind_dir1;
+   u8 wind_speed0;
+   u8 wind_speed1;
+};
+
+struct EnvSubChunk8 {
+   u8 unknown1[0x9];
+   float unknown2;
+   float unknown3;
+   u8 data[15];
+};
+
+struct EnvironmentInfoChunk {
+ u32 chunk_id;
+ u32 chunk_size;
+ u32 magic_num_0x92991030;
+ u16 always_0x10_maybe;
+ u16 unknown;
+ u8 data_type; // if 0 or 2 then the next bytes are u8 tag and u32 size I think.
+ u16 num_structs0;
+ EnvSubChunk0 env_sub_chunk0[num_structs0];
+ u8 data_type1;
+ u16 num_structs1;
+ EnvSubChunk1 env_sub_chunk1[num_structs1];
+ u8 data_type2;
+ u16 num_structs2;
+ EnvSubChunk2 env_sub_chunk2[num_structs2];
+ u8 data_type3;
+ u16 num_structs3;
+ EnvSubChunk3 env_sub_chunk3[num_structs3];
+ u8 data_type4;
+ u16 num_structs4;
+ EnvSubChunk4 env_sub_chunk4[num_structs4];
+ u8 data_type5;
+ // Texture file indices (see chunk 0x21000009 for the environment files)
+ // and other things.
+ u16 num_structs5;
+ if (unknown > 0) {
+   EnvSubChunk5_other env_sub_chunk5[num_structs5];
+ }
+ else{
+   EnvSubChunk5 env_sub_chunk5[num_structs5];
+ }
+ u8 data_type6;
+ u16 num_structs6;
+ EnvSubChunk6 env_sub_chunk6[num_structs6];
+ u8 data_type7;
+ u16 num_structs7;
+ EnvSubChunk7 env_sub_chunk7[num_structs7];
+ u8 unknown0;
+ u16 unknown1[8];
+ u8 unknown2;
+ u8 data_type8;
+ u8 num_structs8;
+ EnvSubChunk8 enb_sub_chunk8[num_structs8];
+ u16 unknown_3; // always 0x00 0x0B?
+ u16 num_structs9;
+ u8 structs9[5*num_structs9];
+ u8 end_byte_0xFF;
+ 
+ /*u8 chunk_data[chunk_size-11-sizeof(env_sub_chunk0)
+ - 3 - sizeof(env_sub_chunk1) - 3 - sizeof(env_sub_chunk2)
+ - 3 - sizeof(env_sub_chunk3)
+ - 3 - sizeof(env_sub_chunk4)
+ - 3 - sizeof(env_sub_chunk5)
+ - 3 - sizeof(env_sub_chunk6)
+ - 3 - sizeof(env_sub_chunk7)
+ - 0x14 - sizeof(enb_sub_chunk8) - 4 - sizeof(structs9)];*/
+};
+
+enum FFNAType : u8 {
+  Type0,
+  Type1,
+  Model,
+  Map,
+  Type4,
+  Type5,
+  Type6,
+  Type7
+};
+
+struct UnknownChunk {
+  u32 chunk_id;
+  u32 chunk_size;
+  u8 chunk_data[chunk_size];
+};
+
+struct Chunk {
+ u32 chunk_id = std::mem::read_unsigned($, 4);
+ if (chunk_id == 0x20000000){
+   Chunk1 chunk1;
+ }
+ else if (chunk_id == 0x20000002){ 
+   Chunk8 terrain_chunk;
+ }
+ else if (chunk_id == 0x20000003){
+   Chunk5_0 chunk5;
+ }
+ else if (chunk_id == 0x20000004){
+   Chunk3 chunk3;
+ }
+ else if (chunk_id == 0x2000000C){
+   Chunk2 chunk2;
+ }
+ else if (chunk_id == 0x21000002){
+   Chunk4 terrain_textures_filename;
+ }
+ else if (chunk_id == 0x21000003){
+   Chunk4 more_filenames_chunk;
+ }
+ else if (chunk_id == 0x21000004){
+   Chunk4 filenames_chunk;
+ }
+ else if (chunk_id == 0x2000000C){
+   Chunk2 chunk2;
+ }
+ else if (chunk_id == 0x21000009){
+   WaterAndSkyFilenamesChunk water_and_sky_chunk;
+ }
+ else if (chunk_id == 0x20000010){
+   ShoreChunk shore_chunk;
+ }
+ else if (chunk_id == 0x21000010){
+   Chunk4 shore_filenames;
+ }
+ else if (chunk_id == 0x20000008){
+   BigChunk big_chunk;
+ }
+ else if (chunk_id == 0x20000009){
+   EnvironmentInfoChunk env_info_chunk;
+ }
+ else if (chunk_id == 0x21000012){
+   Chunk4 map_audio_related_filenames; // You can change the sound to other maps by changing the data here
+ }
+ else if (chunk_id == 0x21000006){
+   Chunk4 unknown_chunk;
+ }
+ else{
+   UnknownChunk unknown_chunk;
+ }
+};
+
+
+struct MapFile {
+ char ffna_signature[4];
+ FFNAType ffna_type;
+ Chunk chunks[while($ < sizeof($))];
+ };
+ 
+MapFile mapfile @ 0;
